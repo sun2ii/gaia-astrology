@@ -1,0 +1,1250 @@
+/* Night Sky Explorer — one small stylesheet, no framework. */
+
+:root {
+  --bg: #07090f;
+  --bg-raised: #10141f;
+  --border: #232a3a;
+  --text: #e8ebf2;
+  --muted: #8d95a8;
+  --accent: #ffd27a;
+  --selected: #1a2236;
+  --toolbar-h: 3.6rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.45;
+  overflow: hidden;
+}
+
+/* ---------- App shell: full-screen chart, HUD top-left, drawer right, toolbar bottom ---------- */
+
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+.stage {
+  position: absolute;
+  inset: 0 0 var(--toolbar-h) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.stage-chart {
+  width: min(100%, calc(100vh - var(--toolbar-h) - 1rem), calc(100dvh - var(--toolbar-h) - 1rem));
+  aspect-ratio: 1 / 1;
+}
+
+.hud {
+  position: absolute;
+  top: 1rem;
+  left: 1.25rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hud h1 {
+  margin: 0.1rem 0 0.1rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.hud .when {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--toolbar-h);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.75rem;
+  background: rgba(16, 20, 31, 0.96);
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+a.toggle {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.toggle,
+.timebar button,
+.timebar select {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggle:hover,
+.timebar button:hover,
+.timebar select:hover {
+  border-color: var(--accent);
+}
+
+.toggle.active {
+  background: var(--selected);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: var(--toolbar-h);
+  width: min(34rem, 100vw);
+  z-index: 2;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(7, 9, 15, 0.92);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+}
+
+.drawer-panel h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+}
+
+.drawer-panel .detail-header button {
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.drawer-panel.about p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Observer form inside the drawer */
+.controls {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.controls label small {
+  font-size: 0.75rem;
+}
+
+.controls input,
+.controls select {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  min-width: 9rem;
+}
+
+.error {
+  color: #ff9a9a;
+}
+
+.count {
+  margin: 0.5rem 0 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.count-note {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+/* Star list */
+.star-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.star-row {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 1rem;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.star-row:hover,
+.star-row:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.star-row.selected {
+  background: var(--selected);
+  border-color: var(--accent);
+}
+
+.star-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  grid-column: 1;
+}
+
+.star-where {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: center;
+  text-align: right;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.star-constellation,
+.star-mag {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Detail panel */
+.detail {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.detail h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: 0.06em;
+}
+
+.detail-header button {
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.detail-designation {
+  margin: 0.1rem 0 0;
+  color: var(--muted);
+}
+
+.detail h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.detail dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 1rem 0 0;
+}
+
+.detail dt {
+  color: var(--muted);
+}
+
+.detail dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-instruction {
+  margin: 1rem 0 0;
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+.detail-note {
+  margin: 1.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---------- V2: sky chart ---------- */
+
+.chart {
+  margin: 0;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+.chart figcaption {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.chart-sky {
+  fill: #0b1020;
+}
+
+.chart-horizon {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.chart-ring {
+  fill: none;
+  stroke: #1c2436;
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+
+.chart-ring-label {
+  fill: #3d4761;
+  font-size: 10px;
+}
+
+.chart-compass {
+  fill: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.chart-compass-minor {
+  fill: var(--muted);
+  font-size: 10px;
+}
+
+.chart-constellation {
+  --constellation-color: #8d95a8;
+}
+
+.chart-constellation line {
+  stroke: var(--constellation-color);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.chart-constellation.dimmed line:not(.chart-hit) {
+  stroke-opacity: 0.18;
+}
+
+.chart-constellation .chart-hit,
+.chart-star .chart-hit {
+  stroke: transparent;
+  stroke-width: 12;
+  fill: transparent;
+  cursor: pointer;
+}
+
+.chart-constellation {
+  cursor: pointer;
+  outline: none;
+}
+
+.chart-constellation:hover line:not(.chart-hit),
+.chart-constellation:focus-visible line:not(.chart-hit) {
+  stroke-opacity: 1;
+  stroke-width: 1.6;
+}
+
+.chart-constellation.selected line:not(.chart-hit) {
+  stroke-opacity: 1;
+  stroke-width: 2.2;
+}
+
+.chart-constellation-label {
+  fill: var(--constellation-color);
+  fill-opacity: 0.75;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.chart-constellation.dimmed .chart-constellation-label {
+  fill-opacity: 0.3;
+}
+
+.chart-constellation:hover .chart-constellation-label,
+.chart-constellation.selected .chart-constellation-label {
+  fill-opacity: 1;
+  font-weight: 600;
+}
+
+.detail-swatch {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  margin-right: 0.4em;
+  vertical-align: baseline;
+  background: var(--constellation-color, var(--muted));
+}
+
+.chart-star {
+  cursor: pointer;
+  outline: none;
+}
+
+.chart-star circle:not(.chart-hit) {
+  fill: #f2f4fa;
+}
+
+.chart-star.figure circle:not(.chart-hit) {
+  fill: #8d95a8;
+}
+
+.chart-star:hover circle:not(.chart-hit),
+.chart-star:focus-visible circle:not(.chart-hit),
+.chart-star.selected circle:not(.chart-hit) {
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-opacity: 0.4;
+}
+
+.chart-star-label {
+  fill: #c9d0e0;
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.chart-star.selected .chart-star-label {
+  fill: var(--accent);
+}
+
+.detail-hint p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.link-button {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.member-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.member-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.member-row:hover {
+  border-color: var(--border);
+  background: var(--selected);
+}
+
+.member-row small {
+  color: var(--muted);
+}
+
+.member-where {
+  color: var(--accent);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- V3: time bar ---------- */
+
+.timebar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.timebar button,
+.timebar select {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+}
+
+.timebar button:hover,
+.timebar select:hover {
+  border-color: var(--accent);
+}
+
+.timebar-play {
+  min-width: 6rem;
+}
+
+.timebar-play.playing {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.timebar-select {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+@media (max-width: 1500px) {
+  .timebar-select > span {
+    display: none;
+  }
+}
+
+.timebar-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 0 0.25rem;
+}
+
+.when-live {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+/* ---------- V4: solar-system bodies + astrology ---------- */
+
+.chart-body {
+  cursor: pointer;
+  outline: none;
+}
+
+.chart-body circle:not(.chart-hit) {
+  fill: #ffd9a0;
+  stroke: #ffb347;
+  stroke-width: 1.5;
+}
+
+.chart-body.sun circle:not(.chart-hit) {
+  fill: #ffe066;
+  stroke: #ffb300;
+}
+
+.chart-body.moon circle:not(.chart-hit) {
+  fill: #e6e9f0;
+  stroke: #b8bfd0;
+}
+
+.chart-body:hover circle:not(.chart-hit),
+.chart-body:focus-visible circle:not(.chart-hit),
+.chart-body.selected circle:not(.chart-hit) {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.chart-body-label {
+  fill: #ffd9a0;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.body-symbol,
+.zodiac-symbol {
+  font-size: 1.1em;
+}
+
+.astrology {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.placements {
+  font-size: 0.85rem;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.placements th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.placements td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid #161c2a;
+}
+
+.placements tbody tr {
+  cursor: pointer;
+}
+
+.placements tbody tr:hover,
+.placements tbody tr:focus-visible {
+  background: var(--selected);
+  outline: none;
+}
+
+.placements .retro {
+  color: var(--accent);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.aspect-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.aspect-list li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.aspect-glyphs {
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- V6: birth chart ---------- */
+
+.controls label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: center;
+}
+
+.controls input[type="checkbox"] {
+  min-width: auto;
+}
+
+.controls button.toggle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.big-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.big-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.big-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.big-value {
+  text-align: left;
+  text-decoration: none;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.birth h3 {
+  margin: 1.5rem 0 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.member-row.open {
+  background: var(--selected);
+  border-color: var(--border);
+}
+
+.member-list.compact .member-row {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+.explain {
+  padding: 0.5rem 0.75rem 0.75rem;
+  border-left: 2px solid var(--accent);
+  margin: 0.25rem 0 0.5rem 0.5rem;
+  font-size: 0.92rem;
+}
+
+.explain p {
+  margin: 0 0 0.5rem;
+}
+
+.explain p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- V7: glossary terms, progressive disclosure ---------- */
+
+.term-wrap {
+  display: inline;
+}
+
+.term {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: help;
+  text-decoration: underline dotted var(--muted);
+  text-underline-offset: 3px;
+}
+
+.term:hover,
+.term[aria-expanded="true"] {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.term-definition {
+  display: block;
+  margin: 0.4rem 0 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-raised);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.deeper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.deeper .toggle.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.deeper-why {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.headline {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.headline .big-label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.headline p {
+  margin: 0;
+}
+
+.big-card.wide {
+  grid-column: 1 / -1;
+}
+
+.big-card .big-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.event-day h3 {
+  margin: 1.25rem 0 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.event-icon {
+  display: inline-block;
+  width: 1.4em;
+  text-align: center;
+  color: var(--muted);
+}
+
+.event-icon.lunation { color: #e6e9f0; }
+.event-icon.transit { color: var(--accent); }
+.event-icon.station { color: #f58ea3; }
+.event-icon.return { color: #ffe066; }
+
+.upcoming .drawer-panel h3,
+.drawer-panel .astrology .eyebrow {
+  margin-top: 1.25rem;
+}
+
+/* A card whose glossary term is open stretches across the row so the definition has room. */
+.big-card:has(.term[aria-expanded="true"]) {
+  grid-column: 1 / -1;
+}
+
+/* ---------- V8: Learn section (reading layout) ---------- */
+
+.learn {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+.learn-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  max-width: 44rem;
+  margin: 0 auto 1.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.learn-nav a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.learn-nav a:hover {
+  text-decoration: underline;
+}
+
+.learn-article {
+  max-width: 44rem;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.learn-article h1 {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 2.2rem;
+  line-height: 1.15;
+}
+
+.learn-article h2 {
+  margin: 2rem 0 0.4rem;
+  font-size: 1.15rem;
+  color: var(--accent);
+}
+
+.learn-article p {
+  margin: 0 0 0.9rem;
+}
+
+.learn-article .lede {
+  font-size: 1.15rem;
+  color: #c9d0e0;
+}
+
+.learn-article a {
+  color: var(--accent);
+}
+
+.learn-glyph {
+  font-size: 1.1em;
+  margin-right: 0.15em;
+}
+
+.learn-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.learn-facts dt {
+  color: var(--muted);
+}
+
+.learn-facts dd {
+  margin: 0;
+}
+
+.learn-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.learn-grid {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.5rem;
+}
+
+.learn-grid li {
+  display: flex;
+  flex-direction: column;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.learn-grid li .muted {
+  font-size: 0.8rem;
+}
+
+.learn-pager {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.read-more {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+/* ---------- V9: star pages ---------- */
+
+.star-index-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.star-index-controls input {
+  flex: 1 1 16rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.star-group h2 {
+  margin-top: 1.75rem;
+}
+
+.star-index {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.star-index-row {
+  display: grid;
+  grid-template-columns: 1rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  color: var(--text) !important;
+  text-decoration: none;
+}
+
+.star-index-row:hover {
+  background: var(--selected);
+}
+
+.star-index-name small {
+  color: var(--muted);
+  margin-left: 0.35rem;
+}
+
+.star-dot {
+  display: inline-block;
+  border-radius: 50%;
+  background: #f2f4fa;
+  justify-self: center;
+}
+
+.star-dot.figure {
+  background: #8d95a8;
+}
+
+.star-dot.big {
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.35em;
+  vertical-align: middle;
+  box-shadow: 0 0 12px currentColor;
+}
+
+/* ---------- V9: zodiac layer ---------- */
+
+.chart-ecliptic {
+  stroke: var(--accent);
+  stroke-opacity: 0.55;
+  stroke-width: 1.4;
+  stroke-dasharray: 6 5;
+}
+
+.chart-sign-tick {
+  fill: var(--bg);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.chart-sign-glyph {
+  fill: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}
+
+.chart-constellation.emphasised line:not(.chart-hit) {
+  stroke-opacity: 0.95;
+  stroke-width: 1.6;
+}
+
+.chart-constellation.emphasised .chart-constellation-label {
+  fill-opacity: 1;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.chart-pointer line {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.chart-pointer circle {
+  fill: var(--accent);
+}
+
+.chart-pointer text {
+  fill: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}
+
+.zodiac-strip {
+  position: absolute;
+  top: 6.5rem;
+  left: 1.25rem;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.3rem;
+}
+
+.zodiac-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  min-width: 3.4rem;
+  padding: 0.3rem 0.35rem;
+  font: inherit;
+  color: var(--muted);
+  background: rgba(16, 20, 31, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.zodiac-chip-glyph {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.zodiac-chip-name {
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+}
+
+.zodiac-chip.up {
+  color: var(--text);
+}
+
+.zodiac-chip.up::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.zodiac-chip:hover,
+.zodiac-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}

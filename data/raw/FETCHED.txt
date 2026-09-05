@@ -1,0 +1,13 @@
+Fetched: 2026-09-03T17:31:07.394Z
+hipparcos_I239_vmag_lt_4.5.tsv
+  https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=I/239/hip_main&-out=HIP,RAICRS,DEICRS,Vmag,Plx,e_Plx,pmRA,pmDE,SpType,HD&Vmag=%3C4.5&-out.max=5000&-sort=Vmag
+yale_bsc5_V50_vmag_lt_7.0.tsv
+  https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=V/50/catalog&-out=HR,Name,HD,SAO,Vmag,SpType,Multiple,ADS,NoteFlag,RAJ2000,DEJ2000&Vmag=%3C7.0&-out.max=20000&-sort=Vmag
+IAU-CSN.txt
+  https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt
+constellation_boundaries_VI42.dat
+  https://cdsarc.cds.unistra.fr/ftp/VI/42/data.dat
+stellarium_modern_index.json
+  https://raw.githubusercontent.com/Stellarium/stellarium/master/skycultures/modern/index.json
+hipparcos_I239_constellation_line_stars.tsv
+  https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=I/239/hip_main&HIP=<HIP numbers referenced by stellarium_modern_index.json>
