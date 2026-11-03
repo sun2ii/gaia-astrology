@@ -23,18 +23,18 @@ export const ZODIAC_SIGNS = [
 export type ZodiacSign = (typeof ZODIAC_SIGNS)[number];
 
 export const ZODIAC_SYMBOLS: Record<ZodiacSign, string> = {
-  Aries: "♈",
-  Taurus: "♉",
-  Gemini: "♊",
-  Cancer: "♋",
-  Leo: "♌",
-  Virgo: "♍",
-  Libra: "♎",
-  Scorpio: "♏",
-  Sagittarius: "♐",
-  Capricorn: "♑",
-  Aquarius: "♒",
-  Pisces: "♓",
+  Aries: "",
+  Taurus: "",
+  Gemini: "",
+  Cancer: "",
+  Leo: "",
+  Virgo: "",
+  Libra: "",
+  Scorpio: "",
+  Sagittarius: "",
+  Capricorn: "",
+  Aquarius: "",
+  Pisces: "",
 };
 
 /** A position on the tropical zodiac: sign + degrees into that sign [0, 30). */

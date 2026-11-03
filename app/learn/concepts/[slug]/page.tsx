@@ -7,6 +7,12 @@ export function generateStaticParams() {
   return [...CONCEPTS, ...STAR_CONCEPTS].map((c) => ({ slug: c.slug }));
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const entry = getConcept(slug);
+  return entry ? { title: entry.title } : {};
+}
+
 export default async function ConceptPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const entry = getConcept(slug);

@@ -9,6 +9,12 @@
  * counts its small neighbours).
  * Constellations with the most neighbours are coloured first and each takes
  * the first palette colour none of its already-coloured neighbours uses.
+ *
+ * Zodiac constellations are special-cased to use element colors:
+ *   Fire (Ari, Leo, Sgr) - red
+ *   Earth (Tau, Vir, Cap) - green
+ *   Air (Gem, Lib, Aqr) - white/airy
+ *   Water (Cnc, Sco, Psc) - blue
  */
 import type { Constellation, Star } from "@/lib/astronomy/types";
 
@@ -25,6 +31,30 @@ export const CONSTELLATION_PALETTE = [
   "#7fa2ff", // periwinkle
   "#e78cf0", // magenta
 ] as const;
+
+/** Element colors for zodiac constellations. */
+export const ELEMENT_COLORS = {
+  fire: "#f05545",    // warm red
+  earth: "#8b7355",   // earthy greenish brown
+  air: "#d4e5ff",     // white/airy dragonair vibes
+  water: "#4fa8d6",   // blue
+} as const;
+
+/** Zodiac constellation abbreviations grouped by element. */
+export const ZODIAC_ELEMENT_MAP: Record<string, keyof typeof ELEMENT_COLORS> = {
+  Ari: "fire",   // Aries
+  Leo: "fire",   // Leo
+  Sgr: "fire",   // Sagittarius
+  Tau: "earth",  // Taurus
+  Vir: "earth",  // Virgo
+  Cap: "earth",  // Capricorn
+  Gem: "air",    // Gemini
+  Lib: "air",    // Libra
+  Aqr: "air",    // Aquarius
+  Cnc: "water",  // Cancer
+  Sco: "water",  // Scorpio
+  Psc: "water",  // Pisces
+};
 
 /** Figures whose nearest stars are closer than this (degrees) count as neighbours. */
 export const NEIGHBOUR_DEG = 14;
@@ -111,5 +141,12 @@ export function assignConstellationColors(
     colourIndex.set(abbr, pick);
   }
 
-  return new Map([...colourIndex].map(([abbr, i]) => [abbr, palette[i]]));
+  const result = new Map([...colourIndex].map(([abbr, i]) => [abbr, palette[i]]));
+
+  // Override zodiac constellations with element colors
+  for (const [abbr, element] of Object.entries(ZODIAC_ELEMENT_MAP)) {
+    result.set(abbr, ELEMENT_COLORS[element]);
+  }
+
+  return result;
 }

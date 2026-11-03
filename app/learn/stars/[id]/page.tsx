@@ -18,6 +18,14 @@ export function generateStaticParams() {
   return STARS.map((s) => ({ id: s.id }));
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const star = getStarById(id);
+  if (!star) return {};
+  const name = star.name ?? star.designation;
+  return { title: name, description: `${name}: where it is in the sky, what kind of star it is, and how far away.` };
+}
+
 export default async function StarPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const star = getStarById(id);

@@ -9,6 +9,13 @@ export function generateStaticParams() {
   return PLANET_ORDER.flatMap((p) => SIGN_ORDER.map((s) => ({ slug: placementSlug(p, s) })));
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const parsed = parsePlacementSlug(slug);
+  if (!parsed) return {};
+  return { title: composePlacement(parsed.planet, parsed.sign).title };
+}
+
 export default async function PlacementPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const parsed = parsePlacementSlug(slug);

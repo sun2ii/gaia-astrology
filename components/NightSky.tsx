@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AstrologyPanel } from "@/components/AstrologyPanel";
 import { BirthChartPanel, birthDataFromForm, emptyBirthForm, loadBirthForm, type BirthForm } from "@/components/BirthChartPanel";
 import { UpcomingPanel } from "@/components/UpcomingPanel";
-import { ZodiacStrip } from "@/components/ZodiacStrip";
 import { computeZodiacSky } from "@/lib/astrology/zodiacSky";
 import { getNatalChart } from "@/lib/astrology/natal";
 import { BodyDetail } from "@/components/BodyDetail";
@@ -14,7 +12,7 @@ import { ObserverControls, type ObserverSettings } from "@/components/ObserverCo
 import { DEFAULT_LAYERS, SkyChart, type ChartLayers, type ChartSelection } from "@/components/SkyChart";
 import { StarDetail } from "@/components/StarDetail";
 import { StarList } from "@/components/StarList";
-import { TimeControls } from "@/components/TimeControls";
+import { Toolbar } from "@/components/Toolbar";
 import { createSkyFrame, toHorizontal } from "@/lib/astronomy/coordinates";
 import { getSolarSystemPositions, type SolarSystemBodyId } from "@/lib/astronomy/solarSystem";
 import type { Observer } from "@/lib/astronomy/types";
@@ -29,6 +27,8 @@ import {
   getStarById,
 } from "@/lib/catalog/stars";
 import { assignConstellationColors } from "@/lib/chart/constellationColors";
+import { IDENTITY, type Mat3 } from "@/lib/chart/view";
+import { type SpaceAnchor, type ViewMode, bandOffset, followsTime, lockedToBand, spaceAnchor, viewFor, withBandOffset } from "@/lib/chart/presets";
 import { DEFAULT_OBSERVER, DEFAULT_OBSERVER_LABEL } from "@/lib/config/observer";
 import { PLAY_SPEEDS, formatLongDate, formatTime, localTimeZoneName } from "@/lib/time";
 
@@ -64,8 +64,8 @@ function computeSky(observer: Observer, date: Date, minAltitude: number) {
 /** Computed once: depends only on the catalog. */
 const CONSTELLATION_COLORS = assignConstellationColors(CONSTELLATIONS_WITH_FIGURES, STARS);
 
-/** How often the clock advances while playing. 10 fps is smooth enough for a star chart. */
-const PLAY_TICK_MS = 100;
+/** How often the clock advances while playing. 5 fps keeps the chart smooth and halves the render work. */
+const PLAY_TICK_MS = 200;
 
 /** Which drawer is open on the side. "detail" opens automatically on selection. */
 type Drawer = "detail" | "stars" | "astrology" | "birth" | "upcoming" | "observer" | "about" | null;
@@ -81,6 +81,11 @@ export function NightSky() {
   );
   const [layers, setLayers] = useState<ChartLayers>(DEFAULT_LAYERS);
   const [selection, setSelection] = useState<ChartSelection>(null);
+  const [view, setView] = useState<Mat3>(IDENTITY); // how the sphere has been turned
+  const [viewMode, setViewMode] = useState<ViewMode>("overhead");
+  const [anchor, setAnchor] = useState<SpaceAnchor | null>(null); // space view: the stars' fixed orientation
+  const [bandTurn, setBandTurn] = useState(0); // locked modes: how far the user has slid along the band (radians)
+  const [zodiacLongitude, setZodiacLongitude] = useState<number | undefined>(undefined); // zodiac view: centre of the band
   const [drawer, setDrawer] = useState<Drawer>(null);
   const [birthForm, setBirthForm] = useState<BirthForm>(() => loadBirthForm() ?? emptyBirthForm(DEFAULT_OBSERVER));
   const timeZoneName = localTimeZoneName();
@@ -96,9 +101,8 @@ export function NightSky() {
   const toggleLayer = (key: keyof ChartLayers) => setLayers((l) => ({ ...l, [key]: !l[key] }));
 
   // Time bar state. While playing, the clock advances by speed × real elapsed time.
-  const [playing, setPlaying] = useState(false);
-  const [speedIndex, setSpeedIndex] = useState(3); // 1 hour per second
-  const [stepIndex, setStepIndex] = useState(1); // 1 hour
+  const [playing, setPlaying] = useState(true);
+  const [speedIndex, setSpeedIndex] = useState(() => Math.max(0, PLAY_SPEEDS.findIndex((s) => s.factor === 600))); // 10 min per second
   useEffect(() => {
     if (!playing) return;
     const factor = PLAY_SPEEDS[speedIndex].factor;
@@ -112,10 +116,56 @@ export function NightSky() {
     return () => window.clearInterval(id);
   }, [playing, speedIndex]);
 
-  const observer = parseObserver(settings);
+  // Stable object while the coordinates are unchanged, so memos keyed on it survive clock ticks.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const observer = useMemo(() => parseObserver(settings), [settings.latitude, settings.longitude]);
   const date = new Date(settings.timeMs);
   const minAltitude = settings.minAltitude;
-  const sky = observer ? computeSky(observer, date, minAltitude) : null;
+  // Only observer/instant/threshold move the stars; drags, toggles and selection re-render without recomputing.
+  const sky = useMemo(
+    () => (observer ? computeSky(observer, date, minAltitude) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the primitives behind observer/date
+    [settings.latitude, settings.longitude, settings.timeMs, minAltitude],
+  );
+
+  // For following modes the view is derived from the sky each tick rather than stored.
+  const liveView = useMemo(() => {
+    if (!sky || !observer) return view;
+    if (lockedToBand(viewMode)) {
+      const base = viewFor(viewMode, { observer, frame: sky.frame, bodies: sky.bodies, zodiacLongitude });
+      return base ? withBandOffset(base, bandTurn) : view;
+    }
+    if (!followsTime(viewMode)) return view;
+    return viewFor(viewMode, { observer, frame: sky.frame, bodies: sky.bodies, anchor: anchor ?? undefined }) ?? view;
+  }, [sky, observer, viewMode, anchor, view, bandTurn, zodiacLongitude]);
+  // Named viewpoints. Static ones set the view once; following ones re-run every tick.
+  const chooseView = (mode: ViewMode) => {
+    setViewMode(mode);
+    setBandTurn(0);
+    if (!sky || !observer) return;
+    // Zodiac View starts centred on the Sun's place in the zodiac, then stays fixed to the stars;
+    // like the equator, dragging only slides along the band.
+    if (mode === "zodiac") setZodiacLongitude(sky.bodies.find((b) => b.id === "sun")?.eclipticLongitude);
+    if (mode === "space") {
+      const a = spaceAnchor(liveView, sky.frame);
+      setAnchor(a);
+      return;
+    }
+    const v = viewFor(mode, { observer, frame: sky.frame, bodies: sky.bodies });
+    if (v) setView(v);
+  };
+  // Dragging takes over. In space view the drag re-anchors the stars; otherwise the mode becomes free.
+  const onViewDragged = (v: Mat3) => {
+    if (lockedToBand(viewMode) && sky && observer) {
+      // Only the slide along the band is kept; the band itself stays put.
+      const base = viewFor(viewMode, { observer, frame: sky.frame, bodies: sky.bodies, zodiacLongitude });
+      if (base) setBandTurn(bandOffset(base, v));
+      return;
+    }
+    setView(v);
+    if (viewMode === "space" && sky) setAnchor(spaceAnchor(v, sky.frame));
+    else if (viewMode !== "free") setViewMode("free");
+  };
 
   const selectedStar = selection?.kind === "star" ? getStarById(selection.id) : undefined;
   const selectedHorizontal = selectedStar && sky ? toHorizontal(selectedStar, sky.frame) : null;
@@ -141,14 +191,14 @@ export function NightSky() {
         <h1>{DEFAULT_OBSERVER_LABEL}</h1>
         <p className="when">
           {formatLongDate(date)} · {formatTime(date)}
-          {playing ? <span className="when-live"> · running at {PLAY_SPEEDS[speedIndex].label}</span> : null}
         </p>
+        {playing ? <p className="when-live">Running at {PLAY_SPEEDS[speedIndex].label}</p> : null}
         {!observer ? <p className="error">Latitude must be −90…90 and longitude −180…180.</p> : null}
       </header>
 
       {/* The sky */}
       <main className="stage">
-        {sky ? (
+        {sky && observer ? (
           <div className="stage-chart">
             <SkyChart
               positions={sky.positions}
@@ -156,8 +206,13 @@ export function NightSky() {
               colors={CONSTELLATION_COLORS}
               bodies={sky.bodies}
               layers={layers}
+              observer={observer}
               zodiacSky={sky.zodiacSky}
               selection={selection}
+              view={liveView}
+              onView={onViewDragged}
+              lockToBand={lockedToBand(viewMode)}
+              zodiacOnly={viewMode === "zodiac"}
               onSelectStar={selectStar}
               onSelectConstellation={selectConstellation}
               onSelectBody={selectBody}
@@ -165,20 +220,6 @@ export function NightSky() {
           </div>
         ) : null}
       </main>
-
-      {/* Zodiac strip (when the zodiac layer is on) */}
-      {sky && layers.zodiac ? (
-        <ZodiacStrip
-          selected={selection?.kind === "constellation" ? selection.abbreviation : selection?.kind === "star" ? getStarById(selection.id)?.constellation ?? null : null}
-          upNow={Object.fromEntries(
-            CONSTELLATIONS_WITH_FIGURES.map((c) => [
-              c.abbreviation,
-              c.lines.flat().some((id) => (sky.positions.find((p) => p.star.id === id)?.horizontal.altitude ?? -90) > 0),
-            ]),
-          )}
-          onSelect={selectConstellation}
-        />
-      ) : null}
 
       {/* Side drawer */}
       {drawer && sky ? (
@@ -265,51 +306,30 @@ export function NightSky() {
         </aside>
       ) : null}
 
-      {/* Bottom toolbar */}
-      <nav className="toolbar" aria-label="Toolbar">
-        <div className="toolbar-group" role="group" aria-label="Layers">
-          <Toggle label="Stars" active={layers.stars} onClick={() => toggleLayer("stars")} />
-          <Toggle label="Constellations" active={layers.constellations} onClick={() => toggleLayer("constellations")} />
-          <Toggle label="Planets" active={layers.planets} onClick={() => toggleLayer("planets")} />
-          <Toggle label="Names" active={layers.labels} onClick={() => toggleLayer("labels")} />
-          <Toggle label="Zodiac" active={layers.zodiac} onClick={() => toggleLayer("zodiac")} />
-        </div>
+      <a className="credit" href="https://binary1702.com" target="_blank" rel="noreferrer">
+        Built by <strong>Binary 1702</strong>
+      </a>
 
-        <TimeControls
-          playing={playing}
-          speedIndex={speedIndex}
-          stepIndex={stepIndex}
-          onStep={(deltaMs) => setSettings((prev) => ({ ...prev, timeMs: prev.timeMs + deltaMs }))}
-          onTogglePlay={() => setPlaying((p) => !p)}
-          onSpeedChange={setSpeedIndex}
-          onStepSizeChange={setStepIndex}
-          onResetToNow={() => {
-            setPlaying(false);
-            setSettings((prev) => ({ ...prev, timeMs: Date.now() }));
-          }}
-        />
-
-        <div className="toolbar-group" role="group" aria-label="Panels">
-          <Toggle label="Star list" active={drawer === "stars"} onClick={() => toggleDrawer("stars")} />
-          <Toggle label="Today's sky" active={drawer === "astrology"} onClick={() => toggleDrawer("astrology")} />
-          <Toggle label="Birth chart" active={drawer === "birth"} onClick={() => toggleDrawer("birth")} />
-          <Toggle label="Coming up" active={drawer === "upcoming"} onClick={() => toggleDrawer("upcoming")} />
-          <Toggle label="Observer" active={drawer === "observer"} onClick={() => toggleDrawer("observer")} />
-          <Link className="toggle" href="/learn">
-            Learn
-          </Link>
-          <Toggle label="?" active={drawer === "about"} onClick={() => toggleDrawer("about")} />
-        </div>
-      </nav>
+      <Toolbar
+        layers={layers}
+        onToggleLayer={toggleLayer}
+        drawer={drawer}
+        onToggleDrawer={toggleDrawer}
+        playing={playing}
+        onTogglePlay={() => setPlaying((p) => !p)}
+        speedIndex={speedIndex}
+        onSpeedChange={setSpeedIndex}
+        onStep={(deltaMs) => setSettings((prev) => ({ ...prev, timeMs: prev.timeMs + deltaMs }))}
+        view={liveView}
+        viewMode={viewMode}
+        homeLabel={DEFAULT_OBSERVER_LABEL}
+        onViewMode={chooseView}
+        onResetToNow={() => {
+          setPlaying(false);
+          setSettings((prev) => ({ ...prev, timeMs: Date.now() }));
+        }}
+      />
     </div>
-  );
-}
-
-function Toggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button type="button" className={`toggle${active ? " active" : ""}`} aria-pressed={active} onClick={onClick}>
-      {label}
-    </button>
   );
 }
 

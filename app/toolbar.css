@@ -1,0 +1,426 @@
+/* ---------- The instrument rail ----------
+   A column of round keys on the right of the chart. Glass over the sky, a
+   gold hairline, and lamps that light when something is on. On phones it
+   becomes a row along the bottom. */
+
+:root {
+  --rail-glass: rgba(9, 12, 22, 0.66);
+  --rail-line: rgba(255, 215, 140, 0.22);
+  --rail-key: rgba(255, 255, 255, 0.035);
+  --rail-key-hover: rgba(255, 255, 255, 0.09);
+  --rail-ink: #d5dbe8;
+  --rail-dim: #7d879c;
+  --rail-gold: #ffd27a;
+  --rail-glow: rgba(255, 210, 122, 0.45);
+  --rail-size: 2.75rem;
+}
+
+.rail {
+  position: absolute;
+  top: 50%;
+  right: 1.1rem;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.rail-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem;
+  background: var(--rail-glass);
+  border: 1px solid var(--rail-line);
+  border-radius: 999px;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 32px -12px rgba(0, 0, 0, 0.8);
+}
+
+/* ---- keys ---- */
+.rail-key {
+  position: relative;
+  width: var(--rail-size);
+  height: var(--rail-size);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: var(--rail-key);
+  color: var(--rail-ink);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.rail-key.compact {
+  width: calc(var(--rail-size) - 0.5rem);
+  height: calc(var(--rail-size) - 0.5rem);
+}
+
+.rail-key:hover {
+  background: var(--rail-key-hover);
+  color: #fff;
+}
+
+.rail-key:active {
+  transform: scale(0.94);
+}
+
+.rail-key.active {
+  color: var(--rail-gold);
+  border-color: rgba(255, 210, 122, 0.45);
+  background: rgba(255, 210, 122, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 210, 122, 0.08);
+}
+
+.rail-key:focus-visible,
+.rail-play:focus-visible,
+.rail-row:focus-visible {
+  outline: 2px solid var(--rail-gold);
+  outline-offset: 2px;
+}
+
+.rail-compass {
+  display: grid;
+  place-items: center;
+  transition: transform 160ms ease;
+}
+
+.rail-speed-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- tooltips: to the left of the key, only on hover-capable devices ---- */
+@media (hover: hover) {
+  .rail [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    right: calc(100% + 0.7rem);
+    top: 50%;
+    transform: translateY(-50%) translateX(4px);
+    padding: 0.3rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(9, 12, 22, 0.94);
+    border: 1px solid var(--rail-line);
+    color: var(--rail-ink);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease, transform 120ms ease;
+  }
+
+  .rail [data-tip]:hover::after,
+  .rail [data-tip]:focus-visible::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* ---- the play key: a bezel that turns while the sky is running ---- */
+.rail-play {
+  position: relative;
+  width: calc(var(--rail-size) + 0.9rem);
+  height: calc(var(--rail-size) + 0.9rem);
+  margin: 0.15rem 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 55%), rgba(255, 255, 255, 0.05);
+  color: var(--rail-ink);
+  cursor: pointer;
+  transition: color 120ms ease, box-shadow 200ms ease;
+}
+
+.rail-play:hover {
+  color: #fff;
+}
+
+.rail-play.playing {
+  color: var(--rail-gold);
+  box-shadow: 0 0 22px -4px var(--rail-glow);
+}
+
+.rail-bezel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.rail-bezel-ring {
+  fill: none;
+  stroke: rgba(255, 215, 140, 0.28);
+  stroke-width: 1;
+}
+
+.rail-tick {
+  stroke: rgba(213, 219, 232, 0.35);
+  stroke-width: 1;
+}
+
+.rail-tick-long {
+  stroke: rgba(255, 215, 140, 0.7);
+  stroke-width: 1.4;
+}
+
+.rail-play.playing .rail-bezel {
+  animation: rail-turn 60s linear infinite;
+}
+
+@keyframes rail-turn {
+  to { transform: rotate(360deg); }
+}
+
+.rail-play-glyph {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: rgba(9, 12, 22, 0.7);
+}
+
+.rail-play-glyph svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---- flyouts ---- */
+.rail-flyout {
+  position: absolute;
+  right: calc(100% + 0.8rem);
+  top: 0;
+  min-width: 15rem;
+  max-width: 19rem;
+  padding: 0.5rem;
+  background: rgba(9, 12, 22, 0.9);
+  border: 1px solid var(--rail-line);
+  border-radius: 14px;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 18px 48px -16px rgba(0, 0, 0, 0.85);
+  animation: rail-reveal 140ms ease-out;
+  transform-origin: right top;
+}
+
+/* Tall menus: centred on their group and never taller than the screen. */
+.rail-flyout-up {
+  top: 50%;
+  bottom: auto;
+  translate: 0 -50%;
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  transform-origin: right center;
+}
+
+@keyframes rail-reveal {
+  from { opacity: 0; transform: translateX(6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.rail-flyout-title {
+  margin: 0.2rem 0.6rem 0.35rem;
+  font-size: 0.72rem;
+  color: var(--rail-dim);
+}
+
+.rail-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--rail-ink);
+  font: inherit;
+  font-size: 0.86rem;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 100ms ease;
+}
+
+.rail-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rail-row-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  color: var(--rail-dim);
+}
+
+.rail-row.lit .rail-row-icon {
+  color: var(--rail-gold);
+}
+
+.rail-row-label {
+  flex: 1;
+}
+
+.rail-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.rail-row.with-hint {
+  align-items: flex-start;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.rail-row.with-hint .rail-lamp,
+.rail-row.with-hint .rail-badge {
+  margin-top: 0.3rem;
+}
+
+.rail-row-hint {
+  font-size: 0.72rem;
+  color: var(--rail-dim);
+  line-height: 1.3;
+}
+
+.rail-badge {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rail-gold);
+  border: 1px solid rgba(255, 210, 122, 0.35);
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  white-space: nowrap;
+}
+
+.rail-flyout-note {
+  margin: 0.4rem 0.6rem 0.2rem;
+  font-size: 0.72rem;
+  color: var(--rail-dim);
+}
+
+.rail-row-arrow {
+  color: var(--rail-dim);
+}
+
+/* the lamp: a small indicator that lights when the row is on */
+.rail-lamp {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.rail-row.lit .rail-lamp {
+  background: var(--rail-gold);
+  box-shadow: 0 0 8px 1px var(--rail-glow);
+}
+
+.rail-row[role="radio"] .rail-lamp {
+  width: 9px;
+  height: 9px;
+}
+
+/* ---- phones: a row along the bottom; flyouts rise above it ---- */
+@media (max-width: 768px) {
+  .rail {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    transform: none;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+  }
+
+  .rail-group {
+    flex-direction: row;
+  }
+
+  .rail-flyout {
+    right: auto;
+    top: auto;
+    left: 50%;
+    bottom: calc(100% + 0.8rem);
+    transform: translateX(-50%);
+    transform-origin: bottom center;
+    min-width: 14rem;
+  }
+
+  @keyframes rail-reveal {
+    from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: translateX(-50%); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-play.playing .rail-bezel {
+    animation: none;
+  }
+}
+
+/* ---------- Credit, bottom right ---------- */
+.credit {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 0.9rem;
+  z-index: 30;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--rail-glass);
+  border: 1px solid var(--rail-line);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--rail-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.credit strong {
+  font-weight: 600;
+  color: var(--rail-ink);
+}
+
+.credit:hover,
+.credit:focus-visible {
+  color: var(--rail-ink);
+  border-color: rgba(255, 210, 122, 0.5);
+  outline: none;
+}
+
+.credit:hover strong {
+  color: var(--rail-gold);
+}
+
+@media (max-width: 768px) {
+  /* The rail sits along the bottom on phones; tuck the credit above it on the right. */
+  .credit {
+    right: 0.75rem;
+    bottom: calc(4.6rem + env(safe-area-inset-bottom, 0px));
+  }
+}

@@ -11,7 +11,13 @@ export const NightSkyClient = dynamic(() => import("@/components/NightSky").then
   ssr: false,
   loading: () => (
     <main className="stage">
-      <p className="empty">Loading the sky…</p>
+      <div className="stage-chart stage-placeholder" aria-hidden="true">
+        <svg viewBox="-110 -110 220 220">
+          <circle r="100" />
+          <circle r="66.7" strokeDasharray="2 3" />
+          <circle r="33.3" strokeDasharray="2 3" />
+        </svg>
+      </div>
     </main>
   ),
 });

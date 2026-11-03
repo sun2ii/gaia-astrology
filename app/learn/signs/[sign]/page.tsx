@@ -9,6 +9,12 @@ export function generateStaticParams() {
   return SIGN_ORDER.map((s) => ({ sign: s.toLowerCase() }));
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ sign: string }> }) {
+  const { sign } = await params;
+  const name = (sign[0].toUpperCase() + sign.slice(1)) as ZodiacSign;
+  return SIGNS[name] ? { title: name, description: `${name}: the sign, its element and mode, and what each planet means there.` } : {};
+}
+
 export default async function SignPage({ params }: { params: Promise<{ sign: string }> }) {
   const { sign } = await params;
   const name = (sign[0].toUpperCase() + sign.slice(1)) as ZodiacSign;

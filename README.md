@@ -1,4 +1,6 @@
-# Gaia — California Night Sky Explorer (V9)
+# Gaia — Night Sky Explorer
+
+![Gaia night-sky dome chart](public/og.png)
 
 Walk outside, look up, and know what you are looking at.
 
@@ -28,11 +30,14 @@ deep-sky objects and constellation boundaries/mythology are later layers.
 npm install
 npm run dev        # http://localhost:3000
 npm test           # 110 verification tests (vitest)
-npm run build      # production build
+npm run build      # production build (static export to out/)
 ```
 
+Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://example.com`) at build time so the
+sitemap, robots.txt and Open Graph image URLs point at the deployed site.
+
 The date/time controls are interpreted in the browser's own time zone (shown
-next to the Time field). Latitude and longitude default to Orangevale, CA
+next to the Time field). Latitude and longitude default to New York City
 (`lib/config/observer.ts`) and can be changed to anywhere on Earth.
 
 ## How it works (plain-English version)
@@ -179,7 +184,7 @@ lib/
   astrology/zodiacSky.ts     ecliptic + sign boundaries as alt/az; sign -> constellation map
   catalog/starNotes.ts       loads data/star_notes.json
   catalog/stars.ts           loads data/stars.json (swap for a DB/API later, nothing else changes)
-  config/observer.ts         default observer (Orangevale, CA) and time zone
+  config/observer.ts         default observer (New York City) and time zone
   time.ts                    date/time input helpers
 
 components/
@@ -323,8 +328,13 @@ different tradition or tone is a file swap, never an engine change.
 
 ## Explicitly not built yet
 
-No database, accounts, AR, camera, GPS, 3D/WebGL, constellation boundaries as
+No database, accounts, AR, camera, 3D/WebGL, constellation boundaries as
 drawn outlines, mythology, deep-sky objects, weather or light-pollution data. The structure is meant to keep those additions local:
 boundary outlines would be another generated data file drawn by `SkyChart`;
 a database would replace `lib/catalog/stars.ts`; refraction would be one flag
 in `coordinates.ts`.
+
+## Licence
+
+Code is MIT (see `LICENSE`). Catalogue data, constellation figures and star
+notes carry their own licences — see `DATA_SOURCES.md`.

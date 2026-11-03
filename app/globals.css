@@ -8,7 +8,7 @@
   --muted: #8d95a8;
   --accent: #ffd27a;
   --selected: #1a2236;
-  --toolbar-h: 3.6rem;
+  --toolbar-h: 0rem;
 }
 
 * {
@@ -43,11 +43,92 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
+  overflow: hidden;
+  /* Deep-space backdrop: nebula tints and a faint Milky Way band. */
+  background:
+    linear-gradient(118deg, transparent 38%, rgba(190, 200, 255, 0.045) 47%, rgba(255, 230, 190, 0.06) 50%, rgba(190, 200, 255, 0.045) 53%, transparent 62%),
+    radial-gradient(ellipse 60% 50% at 18% 12%, rgba(96, 64, 180, 0.22), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 86% 88%, rgba(28, 120, 150, 0.18), transparent 70%),
+    radial-gradient(ellipse 70% 60% at 55% 45%, rgba(255, 210, 122, 0.04), transparent 70%),
+    var(--bg);
+}
+
+/* Two starfield layers at different scales, breathing slowly out of phase and drifting. */
+.stage::before,
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: repeat;
+}
+
+.stage::before {
+  background-image:
+    radial-gradient(1px 1px at 13px 29px, #fff 50%, transparent 100%),
+    radial-gradient(1px 1px at 71px 103px, #cfd8ff 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 142px 41px, #fff 50%, transparent 100%),
+    radial-gradient(1px 1px at 189px 167px, #ffe9c4 50%, transparent 100%),
+    radial-gradient(1px 1px at 97px 191px, #fff 50%, transparent 100%),
+    radial-gradient(1px 1px at 37px 151px, #cfd8ff 50%, transparent 100%);
+  background-size: 211px 211px;
+  opacity: 0.55;
+  animation: star-breathe 7s ease-in-out infinite alternate, star-drift 240s linear infinite;
+}
+
+.stage::after {
+  background-image:
+    radial-gradient(2px 2px at 47px 83px, #fff 40%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 233px 29px, #ffe9c4 50%, transparent 100%),
+    radial-gradient(1px 1px at 311px 203px, #fff 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 137px 277px, #cfd8ff 50%, transparent 100%),
+    radial-gradient(1px 1px at 283px 331px, #fff 50%, transparent 100%);
+  background-size: 347px 347px;
+  opacity: 0.4;
+  animation: star-breathe 11s ease-in-out -4s infinite alternate, star-drift 360s linear reverse infinite;
+}
+
+@keyframes star-breathe {
+  from { opacity: 0.25; }
+  to { opacity: 0.7; }
+}
+
+@keyframes star-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-211px, 105px, 0); }
 }
 
 .stage-chart {
-  width: min(100%, calc(100vh - var(--toolbar-h) - 1rem), calc(100dvh - var(--toolbar-h) - 1rem));
+  position: relative;
+  z-index: 1;
+  width: min(100%, calc(100vh - 2rem), calc(100dvh - 2rem));
   aspect-ratio: 1 / 1;
+}
+
+/* Atmosphere glow and drop shadow under the dome. The SVG leaves an 8.5% margin
+   (MARGIN / (R + MARGIN)) around the horizon circle, so the disc is inset by half that. */
+.stage-chart::before {
+  content: "";
+  position: absolute;
+  left: 4.27%;
+  top: 4.27%;
+  width: 91.46%;
+  height: 91.46%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    0 0 0 1px rgba(255, 210, 122, 0.18),
+    0 0 48px 6px rgba(120, 150, 255, 0.16),
+    0 0 140px 30px rgba(255, 210, 122, 0.07),
+    0 36px 90px -10px rgba(0, 0, 0, 0.75);
+}
+
+.stage-chart > svg,
+.stage-chart > .chart {
+  position: relative;
+  z-index: 1;
 }
 
 .hud {
@@ -77,29 +158,97 @@ body {
   color: var(--muted);
 }
 
-.toolbar {
+/* Right-side vertical toolbar */
+.sidebar-toolbar {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--toolbar-h);
-  z-index: 3;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  z-index: 50;
   display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  background: rgba(16, 20, 31, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-menu {
+  position: relative;
+}
+
+.sidebar-btn {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 0.75rem;
-  background: rgba(16, 20, 31, 0.96);
-  border-top: 1px solid var(--border);
-  overflow-x: auto;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.sidebar-btn:hover {
+  background: rgba(255, 210, 122, 0.1);
+  border-color: rgba(255, 210, 122, 0.3);
+}
+
+.sidebar-btn.active {
+  background: rgba(255, 210, 122, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sidebar-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.sidebar-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.sidebar-divider {
+  height: 1px;
+  margin: 0.25rem 0;
+  background: var(--border);
+}
+
+.sidebar-popup {
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: rgba(16, 20, 31, 0.98);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.sidebar-popup .toggle {
+  width: 100%;
+  text-align: left;
   white-space: nowrap;
 }
 
-.toolbar-group {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  flex-shrink: 0;
+.toolbar-popup .toggle {
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
 }
 
 a.toggle {
@@ -367,6 +516,20 @@ a.toggle {
 
 .chart {
   margin: 0;
+  position: relative;
+}
+
+/* The planet is painted on a canvas under the chart; the SVG draws everything else on top. */
+.earth-canvas {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+}
+
+.chart svg {
+  position: relative;
+  z-index: 1;
 }
 
 .chart svg {
@@ -374,6 +537,14 @@ a.toggle {
   width: 100%;
   height: 100%;
   font-family: inherit;
+  cursor: grab;
+  touch-action: none; /* the drag turns the dome; don't let the page scroll instead */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.chart svg:active {
+  cursor: grabbing;
 }
 
 .chart figcaption {
@@ -384,13 +555,132 @@ a.toggle {
 }
 
 .chart-sky {
-  fill: #0b1020;
+  fill: #0b1020; /* overridden by the gradient fill attribute; kept as a fallback */
+}
+
+.chart-overlay {
+  pointer-events: none;
+}
+
+/* ---------- The little Earth ---------- */
+.chart-earth-shadow {
+  fill: rgba(0, 0, 0, 0.45);
+  filter: blur(6px);
+}
+
+.chart-earth-limb {
+  fill: none;
+  stroke: rgba(170, 205, 255, 0.55);
+  stroke-width: 1.2;
+}
+
+/* Thin atmosphere halo just outside the limb. */
+.chart-earth-atmo {
+  fill: none;
+  stroke: rgba(120, 180, 255, 0.35);
+  stroke-width: 6;
+  filter: blur(4px);
+}
+
+
+
+.chart-earth-axis {
+  stroke: rgba(255, 210, 122, 0.7);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.chart-earth-here circle {
+  fill: var(--accent);
+}
+
+.chart-earth-here-ring {
+  fill: none !important;
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0.8;
+  animation: here-pulse 2.4s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes here-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.chart-earth-parallel {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 0.6;
+  stroke-dasharray: 3 4;
+  pointer-events: none;
+}
+
+.chart-earth-equator {
+  fill: none;
+  stroke: rgba(255, 230, 170, 0.45);
+  stroke-width: 0.8;
+  pointer-events: none;
+}
+
+.chart-earth-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(5, 8, 18, 0.6);
+  stroke-width: 3px;
+}
+
+.chart-earth-label.land {
+  fill: rgba(236, 246, 220, 0.85);
+}
+
+.chart-earth-label.ocean {
+  fill: rgba(190, 220, 255, 0.6);
+  font-style: italic;
+  font-size: 10px;
+}
+
+.chart-earth-pole {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--accent);
+  pointer-events: none;
+}
+
+.chart-earth-subsolar circle {
+  fill: #ffe066;
+  stroke: rgba(255, 180, 0, 0.9);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 6px rgba(255, 220, 100, 0.9));
+}
+
+/* The horizon great circle once the sphere is tipped; the rim stays the silhouette. */
+.chart-horizon-line {
+  fill: none;
+  stroke: rgba(255, 210, 122, 0.55);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+/* Things on the far side of the horizon, seen through the tipped sphere. */
+.chart-star.below circle:not(.chart-hit),
+.chart-body.below circle:not(.chart-hit) {
+  opacity: 0.35;
+}
+
+.chart-star.below text,
+.chart-body.below text {
+  opacity: 0.45;
 }
 
 .chart-horizon {
   fill: none;
-  stroke: var(--border);
-  stroke-width: 2;
+  stroke: var(--border); /* overridden by the gradient stroke attribute */
+  stroke-width: 3;
 }
 
 .chart-ring {
@@ -420,15 +710,49 @@ a.toggle {
   --constellation-color: #8d95a8;
 }
 
-.chart-constellation line {
+.chart-constellation .chart-figure {
+  fill: none;
   stroke: var(--constellation-color);
   stroke-opacity: 0.55;
   stroke-width: 1;
   stroke-linecap: round;
 }
 
-.chart-constellation.dimmed line:not(.chart-hit) {
+.chart-constellation.dimmed .chart-figure {
   stroke-opacity: 0.18;
+}
+
+/* Stars, one path per tier; picking is done by nearest-star maths, not per-star elements. */
+.chart-figure-stars {
+  fill: #8d95a8;
+  pointer-events: none;
+}
+
+.chart-bright-stars {
+  fill: #f2f4fa;
+  pointer-events: none;
+}
+
+.chart-hover-ring,
+.chart-selected-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.chart-hover-ring {
+  opacity: 0;
+  transition: opacity 80ms ease;
+}
+
+.chart-selected-ring {
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgba(255, 210, 122, 0.8));
+}
+
+.chart-star-label.selected {
+  fill: var(--accent);
 }
 
 .chart-constellation .chart-hit,
@@ -444,13 +768,13 @@ a.toggle {
   outline: none;
 }
 
-.chart-constellation:hover line:not(.chart-hit),
-.chart-constellation:focus-visible line:not(.chart-hit) {
+.chart-constellation:hover .chart-figure,
+.chart-constellation:focus-visible .chart-figure {
   stroke-opacity: 1;
   stroke-width: 1.6;
 }
 
-.chart-constellation.selected line:not(.chart-hit) {
+.chart-constellation.selected .chart-figure {
   stroke-opacity: 1;
   stroke-width: 2.2;
 }
@@ -626,8 +950,9 @@ a.toggle {
 }
 
 .when-live {
+  margin: 0.15rem 0 0;
   color: var(--accent);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* ---------- V4: solar-system bodies + astrology ---------- */
@@ -1166,7 +1491,7 @@ a.toggle {
   stroke-width: 3px;
 }
 
-.chart-constellation.emphasised line:not(.chart-hit) {
+.chart-constellation.emphasised .chart-figure {
   stroke-opacity: 0.95;
   stroke-width: 1.6;
 }

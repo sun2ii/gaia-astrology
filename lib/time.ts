@@ -32,8 +32,7 @@ export const PLAY_SPEEDS: Array<{ label: string; factor: number }> = [
   { label: "real time", factor: 1 },
   { label: "1 min / s", factor: 60 },
   { label: "10 min / s", factor: 600 },
-  { label: "1 hour / s", factor: 3600 },
-  { label: "1 day / s", factor: 86_400 },
+  { label: "30 min / s", factor: 1800 },
 ];
 
 /** "2026-09-03" for an <input type="date">, in local time. */

@@ -1,7 +1,8 @@
 import { Body, EclipticGeoMoon, MoonPhase, Seasons, SunPosition } from "astronomy-engine";
 import { describe, expect, it } from "vitest";
 import { geocentricEclipticOfDate, getBodyPosition, getSolarSystemPositions, longitudeDelta } from "@/lib/astronomy/solarSystem";
-import { DEFAULT_OBSERVER } from "@/lib/config/observer";
+import { DEFAULT_OBSERVER, DEFAULT_TIME_ZONE } from "@/lib/config/observer";
+import { zonedLocalToUtc } from "@/lib/time";
 
 describe("solar-system ecliptic longitudes", () => {
   it("put the Sun at exactly 0° at the March equinox and 90° / 180° / 270° at the other season points", () => {
@@ -57,9 +58,12 @@ describe("solar-system positions for an observer", () => {
     }
   });
 
-  it("puts the Sun below the horizon at 9:30 PM in September and above it at noon", () => {
-    expect(getBodyPosition("sun", DEFAULT_OBSERVER, date).horizontal.altitude).toBeLessThan(0);
-    expect(getBodyPosition("sun", DEFAULT_OBSERVER, new Date("2026-09-03T19:30:00Z")).horizontal.altitude).toBeGreaterThan(45);
+  it("puts the Sun below the horizon at 9:30 PM local in September and above it at noon local", () => {
+    // Local wall-clock instants for the default observer, so the test holds wherever the default moves.
+    const night = zonedLocalToUtc({ year: 2026, month: 9, day: 3, hour: 21, minute: 30 }, DEFAULT_TIME_ZONE)!;
+    const noon = zonedLocalToUtc({ year: 2026, month: 9, day: 3, hour: 12, minute: 30 }, DEFAULT_TIME_ZONE)!;
+    expect(getBodyPosition("sun", DEFAULT_OBSERVER, night).horizontal.altitude).toBeLessThan(0);
+    expect(getBodyPosition("sun", DEFAULT_OBSERVER, noon).horizontal.altitude).toBeGreaterThan(45);
   });
 
   it("keeps the Sun within the zodiac band of constellations and near the ecliptic", () => {

@@ -152,6 +152,15 @@ to the catalog spectral type, the standard absolute-magnitude formula applied to
 the catalog magnitude and parallax distance, and the alt/az engine sampled at
 9 PM on the 15th of each month. No per-star physical values are hand-entered.
 
+## Earth outlines — `data/earth.json`
+
+The little Earth drawn at the centre of the sky sphere uses land outlines from
+**Natural Earth 1:110m** (public domain), taken from the `world-atlas@2` npm
+package and converted by `scripts/build-earth.ts` (`npm run data:earth`).
+126 rings, 5,123 points, longitude/latitude rounded to 0.1°. It is drawn only
+for orientation — the observer stands on top of it, Earth's axis points at the
+celestial pole — and carries no other data.
+
 ## Sun, Moon and planets (not in `stars.json`)
 
 Solar-system bodies move, so they are computed at runtime from the

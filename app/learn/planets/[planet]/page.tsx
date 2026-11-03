@@ -9,6 +9,12 @@ export function generateStaticParams() {
   return PLANET_ORDER.map((p) => ({ planet: p }));
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ planet: string }> }) {
+  const { planet } = await params;
+  const entry = PLANETS[planet as SolarSystemBodyId];
+  return entry ? { title: entry.name, description: `${entry.name} in astronomy and astrology, explained in plain English.` } : {};
+}
+
 export default async function PlanetPage({ params }: { params: Promise<{ planet: string }> }) {
   const { planet } = await params;
   const entry = PLANETS[planet as SolarSystemBodyId];

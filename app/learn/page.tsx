@@ -5,7 +5,7 @@ import { CONCEPTS, STAR_CONCEPTS } from "@/lib/learn/concepts";
 import { PLANETS, PLANET_ORDER } from "@/lib/learn/planets";
 import { SIGNS, SIGN_ORDER } from "@/lib/learn/signs";
 
-export const metadata = { title: "Learn — Night Sky" };
+export const metadata = { title: "Learn" };
 
 export default function LearnIndex() {
   return (

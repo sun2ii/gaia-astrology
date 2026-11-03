@@ -151,3 +151,8 @@ export function getBodyPosition(id: SolarSystemBodyId, observer: Observer, date:
 export function getSolarSystemPositions(observer: Observer, date: Date): BodyPosition[] {
   return SOLAR_SYSTEM_BODIES.map((id) => getBodyPosition(id, observer, date));
 }
+
+/** The Sun's ecliptic longitude of date, in degrees [0, 360). */
+export function sunEclipticLongitude(date: Date): number {
+  return geocentricEclipticOfDate(Body.Sun, date).longitude;
+}

@@ -4,7 +4,7 @@ import { CONSTELLATIONS } from "@/lib/astronomy/constellations";
 import { STARS, STAR_CATALOG_META } from "@/lib/catalog/stars";
 import { countStarNotes } from "@/lib/catalog/starNotes";
 
-export const metadata = { title: "All the stars — Night Sky" };
+export const metadata = { title: "All the stars" };
 
 export default function StarsIndexPage() {
   return (
